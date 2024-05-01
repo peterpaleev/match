@@ -22,7 +22,7 @@ async def process_message(text):
     }
 
     responses = model.generate_content(
-        [Part(text=text)],
+        [text],
         generation_config=generation_config,
         safety_settings=safety_settings,
         stream=True

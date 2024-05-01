@@ -1,13 +1,16 @@
 from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
 import os
-import asyncio
 from llm_api import process_message
+from dotenv import load_dotenv
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# Load environment variables from .env file
+load_dotenv()
+
+async def start(update: Update, context: CallbackContext):
     await update.message.reply_text('Hello! I am your cover letter assistant. Send me your resume and job description.')
 
-async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_text(update: Update, context: CallbackContext):
     # Send 'I'm thinking...' message
     thinking_message = await update.message.reply_text("I'm thinking...")
     response_text = await process_message(update.message.text)
@@ -23,8 +26,7 @@ def main():
     application.add_handler(CommandHandler("start", start))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
 
-    port = int(os.getenv('PORT', '8080'))
-    application.run_polling(host='0.0.0.0', port=port)
+    application.run_polling()
 
 if __name__ == '__main__':
     main()
