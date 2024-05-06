@@ -4,6 +4,7 @@ import os
 from llm_api import process_message
 from dotenv import load_dotenv
 from telegram import Document
+import os
 
 
 load_dotenv()
@@ -36,16 +37,33 @@ async def handle_action(update: Update, context: CallbackContext):
         return AWAIT_CV
 
 async def receive_cv(update: Update, context: CallbackContext):
-    document_text = update.message.text
     user_id = update.message.from_user.id
-    user_profiles[user_id] = {'cv': document_text}
 
-    if 
-
-    # prompt_got_cv = "Ты бот для составления резюме. Цель: ответить одним предложением познакомится с человеком и попрости его прислать описание вакансии. после -- идет резюме пользователя --"
-
-    # response_text = await process_message(prompt_got_cv + document)
-    response_text = "Ура резюме получено! Теперь так же, текстом пришли описание вакансии"
+    if update.message.document:
+        # If the message contains a document
+        document = update.message.document
+        file = await document.get_file()
+        
+        # Create a directory for the user if it doesn't exist
+        user_directory = f"user_{user_id}"
+        os.makedirs(user_directory, exist_ok=True)
+        
+        # Generate a unique file name
+        file_name = f"cv_{user_id}_{document.file_name}"
+        
+        # Download and save the document
+        file_path = os.path.join(user_directory, file_name)
+        file.download(file_path)
+        
+        # Store the file path in user_profiles
+        user_profiles[user_id] = {'cv': file_path}
+        
+        response_text = "PDF резюме получено! Теперь, пожалуйста, пришли текстом описание вакансии."
+    else:
+        # If the message contains text instead of a document
+        document = update.message.text
+        user_profiles[user_id] = {'cv': document}
+        response_text = "Текстовое резюме получено! Теперь, пожалуйста, пришли описание вакансии."
 
     await update.message.reply_text(response_text)
     return AWAIT_JOB_DESC
@@ -81,7 +99,7 @@ def main():
         entry_points=[CommandHandler("start", start)],
         states={
             CHOOSE_ACTION: [CallbackQueryHandler(handle_action), MessageHandler(filters.TEXT & ~filters.COMMAND, unexpected_text_handler)],
-            AWAIT_CV: [MessageHandler(filters.TEXT, receive_cv)],
+            AWAIT_CV: [MessageHandler(filters.TEXT & ~filters.ATTACHMENT, receive_cv)],
             AWAIT_JOB_DESC: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_job_description)],
         },
         fallbacks=[]
