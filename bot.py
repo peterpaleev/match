@@ -1,40 +1,93 @@
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext, ConversationHandler, CallbackQueryHandler
 import os
 from llm_api import process_message
 from dotenv import load_dotenv
+from telegram import Document
 
-from telegram import Update
-from telegram.constants import ParseMode
 
-# Load environment variables from .env file
 load_dotenv()
 
+# Define states for conversation
+CHOOSE_ACTION, AWAIT_CV, AWAIT_JOB_DESC, PROCESS_INFO = range(4)
+
+# User profile dictionary
+user_profiles = {}
+
 async def start(update: Update, context: CallbackContext):
-    await update.message.reply_text('Hello! I am your cover letter assistant. Send me your resume and job description.')
+    keyboard = [
+        [InlineKeyboardButton("Прислать резюме текстом", callback_data='send_cv')],
+        [InlineKeyboardButton("Создать резюме (пока не доступно)", callback_data='create_cv')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text('Привет! Я помогу тебе быстро откликаться на вакансии ✨. Давай познакомимся, пришли свое резюме, если есть', reply_markup=reply_markup)
+    return CHOOSE_ACTION
 
-async def handle_text(update: Update, context: CallbackContext):
-    # Send 'I'm thinking...' message
-    thinking_message = await update.message.reply_text("I'm thinking...")
+async def handle_action(update: Update, context: CallbackContext):
+    query = update.callback_query
+    await query.answer()
+    user_id = query.from_user.id
 
-    pre_prompt = "Ты бот для составления резюме Match. Пользователь должен прислать описание вакансии. Составь сопроводительное письмо и задай вопросы пользоватею об его опытеб чтобы дополнить резюме. Если пользователь не прислал вакансю, потребуй это! Затем предложи прислать резюме, чтобы скорректировать его. после -- идет ответ пользователя. Каждый вопрос выдели ++ с двух сторон. Цель - составить резюме под вакансию на основе изначального резюме --"
+    if query.data == 'create_cv':
+        await query.message.reply_text('Создание резюме пока в разработке, но мы записали, что вам это нужно!')
+        return ConversationHandler.END
+    elif query.data == 'send_cv':
+        await query.message.reply_text('Просто скопируй текст резюме и приши сюда')
+        return AWAIT_CV
+
+async def receive_cv(update: Update, context: CallbackContext):
+    document_text = update.message.text
+    user_id = update.message.from_user.id
+    user_profiles[user_id] = {'cv': document_text}
+
+    if 
+
+    # prompt_got_cv = "Ты бот для составления резюме. Цель: ответить одним предложением познакомится с человеком и попрости его прислать описание вакансии. после -- идет резюме пользователя --"
+
+    # response_text = await process_message(prompt_got_cv + document)
+    response_text = "Ура резюме получено! Теперь так же, текстом пришли описание вакансии"
+
+    await update.message.reply_text(response_text)
+    return AWAIT_JOB_DESC
+
+async def receive_job_description(update: Update, context: CallbackContext):
+    job_description = update.message.text
+    user_id = update.message.from_user.id
+    user_profiles[user_id]['job_description'] = job_description
+    await update.message.reply_text('Job description received. Generating your custom cover letter and CV...')
     
-    cv_example = "-- резюме пользователя -- # Петр Палеев ![IMG_1308.JPG](https://prod-files-secure.s3.us-west-2.amazonaws.com/0f9b0748-f6c8-46c4-bdd3-fa4755961076/6bcf801f-2ede-4e4f-b685-1a8ce116cf9d/IMG_1308.jpg) ## Общая информация - Город: Москва - Телефон: +7 (929) 926-80-40 - Email: [petpal005@gmail.com](mailto:petpal005@gmail.com) ## Опыт работы ### Windy.app (2020 - Настоящее время) - **Full-stack инженер(april 2020- feb 2023)**: - **Инженер Full-stack**: май 2020 - февраль 2023 Использование Python, JavaScript, SQL, HTML, CSS, PHP, Clickhouse и др. - **Руководитель инженерной группы (член команды по росту)**: маркетинговые воронки с сайта на сайт Включал в себя разработку новой логики подписок, вопросы оплаты и налогообложения. Развитие на основе данных. Исследование пользовательского опыта. Маркетинговая аналитика. Сотрудничество команд веб-разработки и бэкенда. [windy.app/w2w](http://windy.app/w2w) февраль 2023 - ноябрь 2023 - **Продуктовый менеджер (конкурс экспериментальных функций)**: стикер для обмена Экспериментальный продукт, предназначенный для деления в социальных сетях, моя роль - мини-основатель, сосредоточенный на исследовании пользовательских потоков и общей разработке. [windy.app/sticker](http://windy.app/sticker) ноябрь 2023 - **Аналитик продукта** (для адаптации, общей аналитики продукта, веб-аналитики) Различные информационные панели для разных приложений. Использование Amplitude, Clickhouse, Redash, Cosmograph, SQL - Работа над улучшением пользовательского опыта - Сотрудничество с командами разработки и маркетинга ## Образование ### МИСИС - Специальность: Физика 3.0.0 - Годы обучения: 2018 - 2022 Python, Статистика, Мат анализ ### ВШЭ - Специальность: Дизайн - Годы обучения: 2020 - 2022 Курс Вадима Булгакова по дизайну и программированию [Проект приложения для хранения вещей](https://www.notion.so/d248e224efa8487f903a936340349e04?pvs=21)"
-    
-    # Process the message
-    response_text = await process_message(pre_prompt + update.message.text + cv_example)
-    
-    # Edit the 'I'm thinking...' message with the actual response
-    await thinking_message.edit_text(response_text)
+    prompt_generate_cover_letter = "Ты бот для помощи создания сопроводительных писем и резюме под ваканию. Дальше идет резюме пользователя и описание вакансии. Создай сопроводительное письмо, отредактируй резюме. Резюме выделено --, описание вакансии выделено ++. Придумай вопросы, чтобы раскрыть кандидата и составить письмо. Вопросы выдели ^^, они должны идти после Основого ответа."
+
+    cv_job_desc = prompt_generate_cover_letter + "--" + user_profiles[user_id]['cv'] + ' -- ++ ' + job_description + " ++"
+    response_text = await process_message(cv_job_desc)
+
+    parsed_message = response_text.split('^^')[0]
+
+    await update.message.reply_text(parsed_message)
+    return ConversationHandler.END
+
+async def unexpected_text_handler(update: Update, context: CallbackContext):
+    await update.message.reply_text("Нажми продолжить без резюме, чтобы прислать его в тексовом виде 'Продолжить без резюме'.")
+    return CHOOSE_ACTION
+
 def main():
     token = os.getenv('TELEGRAM_TOKEN')
     if not token:
         raise ValueError("No token provided. Please set the TELEGRAM_TOKEN environment variable.")
-    
-    application = Application.builder().token(token).build()
-    application.add_handler(CommandHandler("start", start))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text))
 
+    application = Application.builder().token(token).build()
+
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler("start", start)],
+        states={
+            CHOOSE_ACTION: [CallbackQueryHandler(handle_action), MessageHandler(filters.TEXT & ~filters.COMMAND, unexpected_text_handler)],
+            AWAIT_CV: [MessageHandler(filters.TEXT, receive_cv)],
+            AWAIT_JOB_DESC: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_job_description)],
+        },
+        fallbacks=[]
+    )
+
+    application.add_handler(conv_handler)
     application.run_polling()
 
 if __name__ == '__main__':
