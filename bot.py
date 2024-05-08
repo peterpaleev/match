@@ -1,11 +1,8 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext, ConversationHandler, CallbackQueryHandler
 import os
-from llm_api import process_message
+from llm_api import process_message, process_pdf_file
 from dotenv import load_dotenv
-from telegram import Document
-import os
-
 
 load_dotenv()
 
@@ -16,8 +13,9 @@ CHOOSE_ACTION, AWAIT_CV, AWAIT_JOB_DESC, PROCESS_INFO = range(4)
 user_profiles = {}
 
 async def start(update: Update, context: CallbackContext):
+    print("Command /start received")
     keyboard = [
-        [InlineKeyboardButton("Прислать резюме текстом", callback_data='send_cv')],
+        [InlineKeyboardButton("Прислать резюме", callback_data='send_cv')],
         [InlineKeyboardButton("Создать резюме (пока не доступно)", callback_data='create_cv')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -28,6 +26,7 @@ async def handle_action(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
     user_id = query.from_user.id
+    print(f"User {user_id} selected action: {query.data}")
 
     if query.data == 'create_cv':
         await query.message.reply_text('Создание резюме пока в разработке, но мы записали, что вам это нужно!')
@@ -36,34 +35,29 @@ async def handle_action(update: Update, context: CallbackContext):
         await query.message.reply_text('Просто скопируй текст резюме и приши сюда')
         return AWAIT_CV
 
-async def receive_cv(update: Update, context: CallbackContext):
+async def receive_cv(update, context):
     user_id = update.message.from_user.id
-
+    print(f"Received resume from user {user_id}")
     if update.message.document:
-        # If the message contains a document
         document = update.message.document
         file = await document.get_file()
-        
-        # Create a directory for the user if it doesn't exist
+
         user_directory = f"user_{user_id}"
         os.makedirs(user_directory, exist_ok=True)
-        
-        # Generate a unique file name
-        file_name = f"cv_{user_id}_{document.file_name}"
-        
-        # Download and save the document
-        file_path = os.path.join(user_directory, file_name)
-        file.download(file_path)
-        
-        # Store the file path in user_profiles
-        user_profiles[user_id] = {'cv': file_path}
-        
-        response_text = "PDF резюме получено! Теперь, пожалуйста, пришли текстом описание вакансии."
+        file_path = os.path.join(user_directory, document.file_name)
+
+        # Use the `download` method from the File object with the specified local file path
+        await file.download_to_drive(file_path)  # Async download call
+
+        print(f"Downloaded file to {file_path}")
+        converted_text = await process_pdf_file(user_id, file_path)
+        print(converted_text)
+        user_profiles[user_id] = {'cv': converted_text}
+        response_text = "PDF resume converted to text! Please send the job description now."
     else:
-        # If the message contains text instead of a document
         document = update.message.text
         user_profiles[user_id] = {'cv': document}
-        response_text = "Текстовое резюме получено! Теперь, пожалуйста, пришли описание вакансии."
+        response_text = "Text resume received! Please send the job description now."
 
     await update.message.reply_text(response_text)
     return AWAIT_JOB_DESC
@@ -71,17 +65,23 @@ async def receive_cv(update: Update, context: CallbackContext):
 async def receive_job_description(update: Update, context: CallbackContext):
     job_description = update.message.text
     user_id = update.message.from_user.id
+    print(f"Job description received from user {user_id}")
     user_profiles[user_id]['job_description'] = job_description
     await update.message.reply_text('Job description received. Generating your custom cover letter and CV...')
-    
     prompt_generate_cover_letter = "Ты бот для помощи создания сопроводительных писем и резюме под ваканию. Дальше идет резюме пользователя и описание вакансии. Создай сопроводительное письмо, отредактируй резюме. Резюме выделено --, описание вакансии выделено ++. Придумай вопросы, чтобы раскрыть кандидата и составить письмо. Вопросы выдели ^^, они должны идти после Основого ответа."
 
-    cv_job_desc = prompt_generate_cover_letter + "--" + user_profiles[user_id]['cv'] + ' -- ++ ' + job_description + " ++"
-    response_text = await process_message(cv_job_desc)
+    response_text = await process_message(
+        prompt_generate_cover_letter +
+        " -- " + 
+        user_profiles[user_id]['cv'] + 
+        " -- ++" + 
+        job_description + 
+        "++"
+        )
+    
+    #response_text = response_text.split('^^')[0]
 
-    parsed_message = response_text.split('^^')[0]
-
-    await update.message.reply_text(parsed_message)
+    await update.message.reply_text(response_text, parse_mode='Markdown')
     return ConversationHandler.END
 
 async def unexpected_text_handler(update: Update, context: CallbackContext):
@@ -99,7 +99,7 @@ def main():
         entry_points=[CommandHandler("start", start)],
         states={
             CHOOSE_ACTION: [CallbackQueryHandler(handle_action), MessageHandler(filters.TEXT & ~filters.COMMAND, unexpected_text_handler)],
-            AWAIT_CV: [MessageHandler(filters.TEXT & ~filters.ATTACHMENT, receive_cv)],
+            AWAIT_CV: [MessageHandler(filters.ATTACHMENT | filters.TEXT, receive_cv)],
             AWAIT_JOB_DESC: [MessageHandler(filters.TEXT & ~filters.COMMAND, receive_job_description)],
         },
         fallbacks=[]

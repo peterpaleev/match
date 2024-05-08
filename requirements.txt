@@ -1,3 +1,15 @@
 python-telegram-bot==20.0a0
 google-cloud-aiplatform
 dotenv
+
+# Standard libraries
+telegram==13.7
+python-dotenv==0.20.0
+
+# Google Cloud and Vertex AI
+google-cloud-storage==2.5.0
+# As of my last training cut-off in December 2023, Vertex AI SDK specifics like vertexai might need direct installation from Google's repositories or adjustment based on the latest available versions and distribution methods.
+
+# BeautifulSoup for HTML parsing, if needed as discussed earlier
+beautifulsoup4==4.11.1
+markdown==3.4.1
