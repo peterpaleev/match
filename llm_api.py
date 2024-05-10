@@ -4,6 +4,10 @@ from vertexai.generative_models import GenerativeModel, Part
 import vertexai
 
 import vertexai.preview.generative_models as generative_models
+# from google.auth.jwt import Credentials
+
+# credentials = Credentials.from_service_account_file("ps2server-322e80af70fc.json")
+# print("credentials: " + credentials)
 
 
 # Initialize Vertex AI

@@ -1,15 +1,15 @@
-python-telegram-bot==20.0a0
+# Core Libraries
+google-cloud-storage
+vertexai
 google-cloud-aiplatform
-dotenv
+google-cloud-aiplatform-vertex-ai-generative-models
 
-# Standard libraries
-telegram==13.7
+python-telegram-bot==13.12
+
+# Local Environment Management
 python-dotenv==0.20.0
 
-# Google Cloud and Vertex AI
-google-cloud-storage==2.5.0
-# As of my last training cut-off in December 2023, Vertex AI SDK specifics like vertexai might need direct installation from Google's repositories or adjustment based on the latest available versions and distribution methods.
-
-# BeautifulSoup for HTML parsing, if needed as discussed earlier
-beautifulsoup4==4.11.1
-markdown==3.4.1
+# Assuming additional libraries for LLM API and PDF processing if they are standard packages
+# Replace 'llm-api-package-name' and 'pdf-library-name' with actual package names if available.
+# llm-api-package-name==version
+# pdf-library-name==version
