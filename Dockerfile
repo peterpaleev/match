@@ -1,7 +1,9 @@
-FROM python:3.10.12  
+FROM python:3.8-slim
+
 WORKDIR /usr/src/app  
 COPY . .  
 RUN mkdir ./images 
+EXPOSE 8080 
 # Copy credentials file into the Docker image
 COPY ps2server-322e80af70fc.json /ps2server-322e80af70fc.json
 # Set the GOOGLE_APPLICATION_CREDENTIALS environment variable
@@ -17,4 +19,4 @@ RUN pip install python-dotenv
 # peterpaleev@Peters-Laptop match % docker push gcr.io/ps2server/telegram-bot                                       
 # RUN pip install --upgrade google-cloud-aiplatform-vertex-ai-generative-models
 
-CMD ["python", "-u", "./bot.py"] && ["gunicorn", "-b", "0.0.0.0:$PORT", "your_application_module:app"]
+CMD ["python3", "-u", "./bot.py"]

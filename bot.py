@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+port = os.environ.get('PORT', 8080)
+
 # Define states for conversation
 CHOOSE_ACTION, AWAIT_CV, AWAIT_JOB_DESC, PROCESS_INFO = range(4)
 
@@ -32,7 +34,7 @@ async def handle_action(update: Update, context: CallbackContext):
         await query.message.reply_text('Создание резюме пока в разработке, но мы записали, что вам это нужно!')
         return ConversationHandler.END
     elif query.data == 'send_cv':
-        await query.message.reply_text('Просто скопируй текст резюме и приши сюда')
+        await query.message.reply_text('Пришли файл или просто текст')
         return AWAIT_CV
 
 async def receive_cv(update, context):
