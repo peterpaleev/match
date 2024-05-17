@@ -1,0 +1,7 @@
+{
+    "name": "My Project",
+    "dockerFile": "../Dockerfile",
+    "forwardPorts": [5000],
+    "postCreateCommand": "echo 'Codespace created!'",
+    "extensions": ["ms-python.python"]
+}
