@@ -13,7 +13,7 @@ import vertexai.preview.generative_models as generative_models
 
 
 # Initialize Vertex AI
-vertexai.init(project="ps2server", location="us-central1")
+vertexai.init(project="maaatch", location="us-central1")
 print("Vertex AI initialized.")
 
 # Setup Google Cloud Storage client
