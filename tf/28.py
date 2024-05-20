@@ -4,4 +4,3 @@ text = file.read()
 text.strip()
 
 print(text.split())
-    

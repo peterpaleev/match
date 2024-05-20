@@ -1,3 +1,5 @@
+# llm_api.py
+
 import os
 from google.cloud import storage
 from vertexai.generative_models import GenerativeModel, Part
@@ -16,7 +18,7 @@ print("Vertex AI initialized.")
 
 # Setup Google Cloud Storage client
 storage_client = storage.Client()
-bucket = storage_client.bucket('match_pdf')
+bucket = storage_client.bucket('match-main')
 print("Google Cloud Storage client setup.")
 
 async def process_message(text):

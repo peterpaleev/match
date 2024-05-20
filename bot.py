@@ -1,3 +1,5 @@
+# bot.py
+
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackContext, ConversationHandler, CallbackQueryHandler
 import os
@@ -55,11 +57,11 @@ async def receive_cv(update, context):
         converted_text = await process_pdf_file(user_id, file_path)
         print(converted_text)
         user_profiles[user_id] = {'cv': converted_text}
-        response_text = "PDF resume converted to text! Please send the job description now."
+        response_text = "Резюме получено! Теперь отправь текст вакансии"
     else:
         document = update.message.text
         user_profiles[user_id] = {'cv': document}
-        response_text = "Text resume received! Please send the job description now."
+        response_text = "Резюме получено! Теперь отправь текст вакансии."
 
     await update.message.reply_text(response_text)
     return AWAIT_JOB_DESC
