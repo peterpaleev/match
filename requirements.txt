@@ -1,18 +1,3 @@
-# Core Libraries
-    # google-cloud-storage
-    # vertexai
-    # google-cloud-aiplatform
-    # google-cloud-aiplatform-vertex-ai-generative-models
-
-    # python-telegram-bot==13.12
-
-# Local Environment Management
-    #python-dotenv==0.20.0
-
-# Assuming additional libraries for LLM API and PDF processing if they are standard packages
-# Replace 'llm-api-package-name' and 'pdf-library-name' with actual package names if available.
-# llm-api-package-name==version
-# pdf-library-name==version
 
 python-telegram-bot==20.0a0
 google-cloud-storage
