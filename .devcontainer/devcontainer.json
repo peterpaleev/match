@@ -1,7 +1,18 @@
 {
-    "name": "My Project",
-    "dockerFile": "../Dockerfile",
-    "forwardPorts": [5000],
-    "postCreateCommand": "echo 'Codespace created!'",
-    "extensions": ["ms-python.python"]
+    "name": "Telegram Bot",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "."
+    },
+    "settings": { 
+        "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    "extensions": [
+        "ms-python.python"
+    ],
+    "forwardPorts": [
+        8080
+    ],
+    "postCreateCommand": "echo 'Environment setup complete.'",
+    "remoteUser": "root"
 }
