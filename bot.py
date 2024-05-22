@@ -85,8 +85,19 @@ async def receive_job_description(update: Update, context: CallbackContext):
     
     #response_text = response_text.split('^^')[0]
 
-    await update.message.reply_text(response_text, parse_mode='Markdown')
+    response_text = escape_markdown(response_text)
+
+    await update.message.reply_text(response_text, parse_mode='Markdown')    
     return ConversationHandler.END
+
+def escape_markdown(text):
+    # List of special characters that need to be escaped in markdown
+    markdown_chars = ['*', '_', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+
+    for char in markdown_chars:
+        text = text.replace(char, '\\' + char)
+
+    return text
 
 async def unexpected_text_handler(update: Update, context: CallbackContext):
     await update.message.reply_text("Нажми продолжить без резюме, чтобы прислать его в тексовом виде 'Продолжить без резюме'.")
