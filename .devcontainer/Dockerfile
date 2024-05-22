@@ -17,11 +17,10 @@ RUN pip install --trusted-host pypi.python.org -r requirements.txt
 COPY . /app
 
 # Copy the Google Cloud service account key file into the container
-COPY maaatch-106da1f4fb1e.json /usr/src/app/service-account-file.json
+COPY maaatch-106da1f4fb1e.json ./
 
 # Set the Google Application Credentials environment variable
-ENV GOOGLE_APPLICATION_CREDENTIALS=/usr/src/app/service-account-file.json
-
+ENV GOOGLE_APPLICATION_CREDENTIALS=maaatch-106da1f4fb1e.json
 
 # Make port 8080 available to the world outside this container
 EXPOSE 8080
