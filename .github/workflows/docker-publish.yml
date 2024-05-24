@@ -71,3 +71,21 @@ jobs:
           TAGS: ${{ steps.meta.outputs.tags }}
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
+
+      - name: Install gcloud CLI
+        if: github.event_name != 'pull_request'
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          export_default_credentials: true
+
+      - name: Deploy to Google Cloud Run
+        if: github.event_name != 'pull_request'
+        run: |
+          gcloud run deploy my-service-name \
+            --image ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build-and-push.outputs.digest }} \
+            --region us-central1 \
+            --platform managed \
+            --allow-unauthenticated
+
