@@ -38,4 +38,7 @@ RUN apt-get update && apt-get install -y supervisor
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Run supervisord
-CMD ["/usr/bin/supervisord"]
+# CMD ["/usr/bin/supervisord"]
+
+CMD ["python", "health_check_server.py"]
+
