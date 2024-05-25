@@ -13,6 +13,11 @@ async def start_server():
     site = web.TCPSite(runner, '0.0.0.0', 8080)
     await site.start()
     print("Server started on port 8080. Health check available at /health")
+    await asyncio.Event().wait() 
 
 if __name__ == '__main__':
-    asyncio.run(start_server())
+    try:
+        asyncio.run(start_server())
+    except Exception as e:
+        print(f"Error: {e}")
+
