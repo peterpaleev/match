@@ -13,6 +13,8 @@ RUN ls -l
 # Install any needed packages specified in requirements.txt
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
+RUN pip install aiohttp
+
 # Copy the remaining directory contents into the container at /app
 COPY . /app
 
