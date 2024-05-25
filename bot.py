@@ -6,6 +6,25 @@ import os
 from llm_api import process_message, process_pdf_file
 from dotenv import load_dotenv
 
+import asyncio
+
+# GOOGLE CLOUD FUCKING
+
+from aiohttp import web
+
+async def handle_health_check(request):
+    return web.Response(text="OK")
+
+async def start_web_server():
+    app = web.Application()
+    app.router.add_get('/health', handle_health_check)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', port)
+    await site.start()
+
+# END GOOGLE CLOUD FUCKING
+
 load_dotenv()
 
 port = os.environ.get('PORT', 8080)
@@ -122,6 +141,10 @@ def main():
 
     application.add_handler(conv_handler)
     application.run_polling()
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(start_web_server())
+    loop.close()
 
 if __name__ == '__main__':
     main()

@@ -31,5 +31,11 @@ EXPOSE 8080
 # Define environment variable
 ENV NAME World
 
-# Run bot.py when the container launches
-CMD ["python", "bot.py"]
+# Install supervisord
+RUN apt-get update && apt-get install -y supervisor
+
+# Copy supervisord configuration file
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Run supervisord
+CMD ["/usr/bin/supervisord"]
